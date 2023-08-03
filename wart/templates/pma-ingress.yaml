@@ -1,0 +1,22 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Values.pma.ingress.name }}
+  annotations:
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/proxy-redirect-from: /
+    nginx.ingress.kubernetes.io/proxy-redirect-to: /dbadmin/
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: {{ .Values.wordpress.ingress.host }}
+    http:
+      paths:
+      - path: /dbadmin(/|$)(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Values.pma.service.name }}
+            port: 
+              number: {{ .Values.pma.service.externalPort }}

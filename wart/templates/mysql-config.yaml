@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.mysql.config.name }}
+  labels:
+    app: {{ .Values.mysql.name }}
+data:
+  {{ .Values.mysql.config.database.key }}: {{ .Values.mysql.config.database.value }}
+  {{ .Values.mysql.config.username.key }}: {{ .Values.mysql.config.username.value }}

@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.pma.service.name }}
+spec:
+  type: ClusterIP
+  selector:
+    app: {{ .Values.pma.name }}
+  ports:
+  - protocol: TCP
+    port: {{ .Values.pma.internalPort }}
+    targetPort: {{ .Values.pma.service.externalPort }}

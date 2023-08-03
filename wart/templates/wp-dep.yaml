@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.wordpress.name }}
+  label:
+    app: {{ .Values.wordpress.name }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.wordpress.name }}
+  replicas: {{ default 1 .Values.wordpress.replica | int }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.wordpress.name }}
+    spec:
+      containers:
+      - name: {{ .Values.wordpress.containerName }}
+        image: "{{ .Values.wordpress.image }}"
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: WORDPRESS_DB_HOST
+          value: {{ .Values.mysql.name }}
+        - name: WORDPRESS_DB_USER
+          valueFrom:
+            configMapKeyRef:
+              name: {{ .Values.mysql.config.name }}
+              key: {{ .Values.mysql.config.username.key }}
+        - name: WORDPRESS_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.mysql.secret.name }}
+              key: {{ .Values.mysql.secret.password.key }}
+        - name: WORDPRESS_DB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: {{ .Values.mysql.config.name }}
+              key: {{ .Values.mysql.config.database.key }}
+        ports:
+        - containerPort: {{ .Values.wordpress.internalPort | int }}

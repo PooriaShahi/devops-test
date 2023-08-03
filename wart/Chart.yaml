@@ -1,0 +1,11 @@
+apiVersion: v2
+name: wart
+description: A complete wordpress helm chart for kubernetes
+type: application
+version: 0.0.1
+appVersion: "0.0.1"
+maintainers:
+  - name: Pooria Shahi
+    email: PooriaPro@gmail.com
+sources:
+  - "https://github.com/pooriashahi/wart"

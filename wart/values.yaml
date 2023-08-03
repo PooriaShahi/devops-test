@@ -1,0 +1,57 @@
+wordpress:
+  replica: 1
+  name: wp-app
+  containerName: wordpress
+  image: wordpress:latest
+  internalPort: 80
+  service:
+    type: ClusterIP
+    externalPort: 80
+    name: wp-svc
+  ingress:
+    name: wp-ingress
+    host: wp.teammelli.fun
+    path: https://wp.teammelli.fun/wordpress
+  issuer:
+    email: PooriaPro@gmail.com
+mysql:
+  replica: 1
+  name: mysql-app
+  containerName: mysql
+  image: mysql:latest
+  internalPort: 3306
+  service:
+    type: ClusterIP
+    externalPort: 3306
+    name: mysql-svc
+  pv:
+    name: mysql-pv
+    path: /mnt/data
+  pvc:
+    name: mysql-pvc
+    storageClass: manual
+    size: 5
+  config:
+    name: mysql-configmap
+    username: 
+      key: username
+      value: wp
+    database:
+      key: database
+      value: wp
+  secret:
+    name: mysql-secret
+    rootPassword:
+      key: rootPassword
+      value: "hadsgdauhoasidjmasldasdad"
+    password:
+      key: password
+      value: "hadsgdauhoasidj"
+pma:
+  name: pma-app
+  internalPort: 80
+  service:
+    name: pma-svc
+    externalPort: 80
+  ingress:
+    name: pma-ingress

@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: {{ .Values.pma.name }}
+  name: {{ .Values.pma.name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.pma.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.pma.name }}
+    spec:
+      containers:
+      - image: phpmyadmin/phpmyadmin
+        name: {{ .Values.pma.name }}
+        ports:
+        - containerPort: {{ .Values.pma.internalPort }}
+        env:
+        - name: PMA_HOST
+          value: {{ .Values.mysql.name }}
+        - name: PMA_PORT
+          value: {{ .Values.mysql.service.internalPort }}
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.mysql.secret.name }}
+              key: {{ .Values.mysql.secret.rootPassword.key }}
