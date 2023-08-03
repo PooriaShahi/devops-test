@@ -1,0 +1,58 @@
+- hosts: all
+  tasks:
+  - name: "deploy nginx ingress"
+    shell: "kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.1/deploy/static/provider/baremetal/deploy.yaml"
+  
+  - name: "prepare nginx ingress"
+    shell: "kubectl delete svc -n ingress-nginx ingress-nginx-controller"
+
+  - name: "Using host network for ingress"
+    shell: "kubectl patch deploy -n ingress-nginx ingress-nginx-controller -p '{\"spec\":{\"template\":{\"spec\":{\"hostNetwork\":true}}}}'"
+  
+  - name: "Getting helm 3 gpgkey"
+    shell: "curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | tee /usr/share/keyrings/helm.gpg > /dev/null"
+  
+  - name: "helm repository"
+    shell: "echo \"deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main\" | tee /etc/apt/sources.list.d/helm-stable-debian.list"
+  
+  - name: "install helm 3"
+    apt:
+      name: helm
+      state: latest
+      update_cache: yes
+  
+  - name: "Copy wart directory"
+    copy:
+      src: ../wart
+      dest: /root
+  
+  - name: "prepare directory for mysql pv"
+    file:
+      path: /mnt/data
+      state: directory
+      mode: '0777'
+  
+  - name: "install our application"
+    shell: "helm upgrade --install wp-app /root/wart"
+  
+  - name: "find wp-app pod"
+    shell: "kubectl get pods | grep wp-app | awk '{print $1}'"
+    register: pod_name
+  
+  - name: "doing wordpress right"
+    shell: "kubectl exec -it {{ pod_name.stdout }} -- ln -s /var/www/html /var/www/html/wordpress"
+
+  - name: "doing wordpress right"
+    shell: "kubectl exec -it {{ pod_name.stdout }} -- chown www-data:www-data -R /var/www/html/wordpress"
+
+  - name: "doing wordpress right"
+    shell: "kubectl exec -it {{ pod_name.stdout }} -- curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar"
+
+  - name: "doing wordpress right"
+    shell: "kubectl exec -it {{ pod_name.stdout }} -- chmod +x wp-cli.phar"
+  
+  - name: "doing wordpress right"
+    shell: "kubectl exec -it {{ pod_name.stdout }} -- mv wp-cli.phar /usr/local/bin/wp"
+
+  - name: "Install wordpress"
+    shell: "kubectl exec -it {{ pod_name.stdout }} -- wp core install --url=https://wp.teammelli.fun/wordpress --title=Test --admin_name=admin --admin_password=admin --admin_email=you@domain.com --allow-root"

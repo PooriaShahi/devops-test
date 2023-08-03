@@ -1,0 +1,22 @@
+trigger:
+- master
+
+pr:
+- '*'
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+stages:
+- stage: deploy
+  jobs:
+  - job: deploy-wp
+    steps:
+    - script: |
+        sed -i 's/latest/v1.0.0/g' wart/values.yaml
+        helm upgrade --install wp-app wart/
+      displayName: 'Deploy WP'
+
+
+
+
